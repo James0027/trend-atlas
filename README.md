@@ -1,14 +1,16 @@
 # Trend Atlas · 全球趋势雷达
 
+正式网站：[trend-atlas-eta.vercel.app](https://trend-atlas-eta.vercel.app)。
+
 公开的个人非商业趋势网站，支持地区、12 个方向、平台组合筛选、搜索、排序、列表/卡片、来源详情、原始排名与历史、收藏、保存视图、分类修正和 CSV 导出。访客数据保存在浏览器；登录后可同步到本人云端账户，访客内容由用户主动导入。
 
-当前生产项目位于 `D:\个人项目\trend-atlas`，源码仓库为 [James0027/trend-atlas](https://github.com/James0027/trend-atlas)（私有仓库，网站计划公开）。使用标准 Next.js 16 App Router、React 19、TypeScript、Tailwind/shadcn/Radix、Supabase PostgreSQL/Auth/Cron 和 Vercel。原 C 盘旧项目保留。
+当前生产项目位于 `D:\个人项目\trend-atlas`，源码仓库为 [James0027/trend-atlas](https://github.com/James0027/trend-atlas)（私有仓库，网站已公开）。使用标准 Next.js 16 App Router、React 19、TypeScript、Tailwind/shadcn/Radix、Supabase PostgreSQL/Auth/Cron 和 Vercel。原 C 盘旧项目保留。
 
-**云端状态：Supabase Free 项目已建立并通过生产库权限测试；Vercel Production 环境变量已配置。正式网站、OAuth 和独立 Cron 仍待上线验收。** 验收记录见 [PRODUCTION_PLAN.md](PRODUCTION_PLAN.md)。
+**云端状态：正式网站已公开上线，生产库、真实数据、CI 和匿名浏览器访问已验证。OAuth 登录及无人访问时的独立 Cron 仍待配置和实际验收。** 验收记录见 [PRODUCTION_PLAN.md](PRODUCTION_PLAN.md)。
 
 ## 安装与检查
 
-使用 Node.js 24；最低兼容版本是 22.22.2。npm 使用兼容 Node 的随附版本，先升级 Node 再考虑升级 npm。
+使用 Node.js 24；仓库和 Vercel 均锁定 `24.x`。npm 使用兼容 Node 的随附版本，先升级 Node 再考虑升级 npm。
 
 ```powershell
 Set-Location -LiteralPath 'D:\个人项目\trend-atlas'

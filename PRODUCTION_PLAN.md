@@ -11,12 +11,12 @@
 
 | Requirement | Evidence needed | Current state |
 |---|---|---|
-| Canonical D drive project | Directory + Git history + production changes | Code in D drive; commit/push pending |
-| GitHub repository | Remote URL + pushed commit | Repository and remote created; push pending |
+| Canonical D drive project | Directory + Git history + production changes | D drive Git commit `f5731b2` pushed to main |
+| GitHub repository | Remote URL + pushed commit | Private repository [James0027/trend-atlas](https://github.com/James0027/trend-atlas), main pushed |
 | Standard Next.js | Dependency lock + successful production build | Next.js 16 build passed on Node 24 |
-| Public deployed website | Ready deployment + anonymous HTTP/browser access | Pending deployment and live check |
-| Global region/topic/platform discovery | Real feed + combined filter browser checks | 32 cloud source rows; fixture browser filters passed; live check pending |
-| Search, sort, dedupe, list/cards, details | Behavioral/browser checks | Desktop/mobile fixture browser flows passed; live check pending |
+| Public deployed website | Ready deployment + anonymous HTTP/browser access | Vercel `dpl_F3EPKGzaEJgakyj691GLsUCZXfnZ` READY; [public site](https://trend-atlas-eta.vercel.app) HTTP 200 and desktop/mobile rendered |
+| Global region/topic/platform discovery | Real feed + combined filter browser checks | 32 real cloud source rows, live API and browser render verified; combined fixture filters passed |
+| Search, sort, dedupe, list/cards, details | Behavioral/browser checks | Desktop/mobile fixture browser flows and live anonymous render passed |
 | Real public sources + coverage/status | Current source requests + documented provenance | 19/32 currently OK, 4 error, 9 restricted; 808 real items after seed |
 | Protected scheduled collection | Cron job definition + successful cloud run + stored results | Manual cloud collection stored; Cron install pending |
 | Independent refresh with no visitor | Two scheduled runs and timestamps | Pending live Cron verification |
@@ -26,9 +26,9 @@
 | Cloud bookmarks/views/corrections | RLS isolation + second session synchronization | Cloud RLS SQL tests passed; actual two-session flow pending |
 | Admin collection/health | Authorized owner flow; unauthorized rejection | API tests passed; owner account and live flow pending |
 | Free limits | No paid plans/resources; bounded retention/quota configuration | Free cloud resources created; quota/retention tests passed |
-| Responsive/accessibility/error states | Desktop/mobile browser checks | 10/10 browser fixture flows passed; live check pending |
-| Secrets/private data | Git diff/ignore + client bundle check + RLS | Production secrets hidden in Vercel; Git/client audit pending |
-| CI and recovery workflow | GitHub checks + README + rollback/redeploy steps | Workflow prepared; GitHub run pending |
+| Responsive/accessibility/error states | Desktop/mobile browser checks | 10/10 browser fixture flows passed; live 1440px/390px no horizontal overflow or page exceptions |
+| Secrets/private data | Git diff/ignore + client bundle check + RLS | Staged diff and 17 client static files excluded actual server secrets; Vercel secrets hidden; cloud RLS SQL passed |
+| CI and recovery workflow | GitHub checks + README + rollback/redeploy steps | [GitHub Actions 36446167715](https://github.com/James0027/trend-atlas/actions/runs/36446167715) passed; auto Git deployment needs Vercel Login Connection |
 | Gemini worker | Successful real model response + reviewed task artifact | Prior worker artifact documented; production independence preserved |
 
 ## Workflow

@@ -1,0 +1,12 @@
+project_id = "trend-atlas"
+
+[auth]
+site_url = "https://trend-atlas-eta.vercel.app"
+additional_redirect_urls = [
+  "https://trend-atlas-eta.vercel.app/auth/callback",
+  "https://trend-atlas-eta.vercel.app/account",
+  "https://trend-atlas-eta.vercel.app/account?mode=recovery",
+  "http://127.0.0.1:3000/auth/callback",
+  "http://127.0.0.1:3000/account",
+  "http://127.0.0.1:3000/account?mode=recovery",
+]
