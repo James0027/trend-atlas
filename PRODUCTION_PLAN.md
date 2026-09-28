@@ -18,11 +18,11 @@
 | Global region/topic/platform discovery | Real feed + combined filter browser checks | 32 real cloud source rows, live API and browser render verified; combined fixture filters passed |
 | Search, sort, dedupe, list/cards, details | Behavioral/browser checks | Desktop/mobile fixture browser flows and live anonymous render passed |
 | Real public sources + coverage/status | Current source requests + documented provenance | 19/32 currently OK, 4 error, 9 restricted; 808 real items after seed |
-| Protected scheduled collection | Cron job definition + successful cloud run + stored results | Manual cloud collection stored; Cron install pending |
+| Protected scheduled collection | Cron job definition + successful cloud run + stored results | Manual cloud collection stored; pg_cron/pg_net/Vault enabled and public site URL saved; secret authorization and Cron install pending |
 | Independent refresh with no visitor | Two scheduled runs and timestamps | Pending live Cron verification |
 | Backoff, quotas, leases, bounded history | Concurrent/failure tests + schema/RPC | Unit and cloud SQL checks passed; scheduled behavior pending |
 | Guest bookmarks/views/corrections/export | Browser tests and safe CSV | Guest bookmark/view desktop/mobile flows passed; remaining live behavior pending |
-| Account login/logout/recovery | Actual Auth session/browser flows | Code and focused tests passed; provider and live login pending |
+| Account login/logout/recovery | Actual Auth session/browser flows | Code and focused tests passed; production Site URL and redirect allowlist pushed; provider and live login pending |
 | Cloud bookmarks/views/corrections | RLS isolation + second session synchronization | Cloud RLS SQL tests passed; actual two-session flow pending |
 | Admin collection/health | Authorized owner flow; unauthorized rejection | API tests passed; owner account and live flow pending |
 | Free limits | No paid plans/resources; bounded retention/quota configuration | Free cloud resources created; quota/retention tests passed |

@@ -77,7 +77,7 @@ on conflict (user_id) do nothing;
 
 ## Vercel 与独立刷新
 
-1. 在 Vercel Hobby 导入私有 GitHub 仓库，框架选择 Next.js、Node 24，安装 `npm ci`、构建 `npm run build`，输出使用框架默认值。配置 Production 环境变量后部署。
+1. 现有 Vercel Hobby 项目 `trend-atlas` 已通过 CLI 部署，框架为 Next.js、Node 24。要让 `main` 推送自动发布，先在 Vercel 账号 Authentication 连接拥有仓库的 GitHub 账号 `James0027`，再运行 `vercel git connect --yes`；连接完成前，GitHub CI 通过不代表新提交已上线。
 2. 部署达到 Ready 并取得 URL 后，用未登录窗口验证首页、`/api/feed`、手机布局与失败提示；配置 Auth redirects，完成实际账户流程、两账户隔离、云端同步与管理员拒绝测试。
 3. 迁移完成后运行 `npm run collect -- --seed`，或让已授权的管理员逐轮采集；检查来源状态与真实数据，不能靠首页外观判断采集成功。
 4. 最后安装独立调度：[supabase/schedule.sql](supabase/schedule.sql)。脚本已准备，**目前尚未在云端安装/验证**。启用 `pg_cron`、`pg_net`、`supabase_vault`，在 Vault 控制台保存 `trend_atlas_site_url`（正式 HTTPS origin）与 `trend_atlas_cron_secret`（同一 CRON_SECRET），由 postgres 运行安装脚本。每 5 分钟向 `/api/cron` 发认证请求，不在 Git/SQL 历史写明文密钥。

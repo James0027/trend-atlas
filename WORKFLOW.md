@@ -2,7 +2,7 @@
 
 生产源码以 `D:\个人项目\trend-atlas` 为准，GitHub 私有仓库为 [James0027/trend-atlas](https://github.com/James0027/trend-atlas)，网站面向公开访问，保持个人非商业和免费预算。技术栈与配置见 [README.md](README.md)。
 
-Vercel/Supabase 的生产部署、Auth 及五分钟 Cron 仍待网页授权、配置和实测。以 [PRODUCTION_PLAN.md](PRODUCTION_PLAN.md) 的验收证据更新状态，代码存在、构建通过、子代理返回都不等于已经上线。
+公开网站 [trend-atlas-eta.vercel.app](https://trend-atlas-eta.vercel.app) 已达到 Vercel Ready，Supabase 生产库、真实快照和 GitHub CI 已核验。GitHub OAuth 与五分钟 Cron 尚未完成实际验收。Vercel GitHub Login Connection 尚未连好，新提交的部署会被作者权限检查拦下；旧版 Ready 部署继续服务。以 [PRODUCTION_PLAN.md](PRODUCTION_PLAN.md) 记录的实际证据为准。
 
 ## 开发循环与分工
 
