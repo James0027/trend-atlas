@@ -13,7 +13,25 @@ export const REGIONS = [
   {id:"IN",name:"印度",short:"IN"},{id:"GLOBAL",name:"国际社区",short:"INT"},
 ] as const;
 const hot = (id:string,name:string,platform:string,color:string,mark:string,homepage:string,topic?:Source["defaultTopic"]):Source => ({id,name,platform,region:"CN",kind:"hot",adapter:"uapi",provider:"UAPI · 第三方聚合",endpoint:`https://uapis.cn/api/v1/misc/hotboard?type=${id}`,homepage,color,mark,defaultTopic:topic,note:"平台公开榜单的第三方快照；源服务可能延迟或中断。"});
-const news = (id:string,name:string,region:Source["region"],hl:string,gl:string,ceid:string,q?:string,topic?:Source["defaultTopic"]):Source => ({id,name,platform:"Google News",region,kind:"news",adapter:"rss",provider:"Google News RSS",endpoint:`https://news.google.com/rss${q?"/search?q="+encodeURIComponent(q+" when:1d")+"&":"?"}hl=${hl}&gl=${gl}&ceid=${ceid}`,homepage:`https://news.google.com/?hl=${hl}&gl=${gl}&ceid=${ceid}`,color:"#4285f4",mark:"G",defaultTopic:topic,note:q?"主题新闻检索；不代表社交平台原生热榜。":"所选新闻版面。地区代表版面市场，不是作者所在地。"});
+const wiki = (language:string,name:string,region:Source["region"]):Source => ({
+  id:`wikipedia-${language}`,name:`维基百科 · ${name}阅读榜`,platform:"Wikipedia",region,
+  kind:"hot",adapter:"wikimedia",provider:"Wikimedia Analytics 官方 API · CC0",
+  endpoint:`https://wikimedia.org/api/rest_v1/metrics/pageviews/top/${language}.wikipedia.org/all-access`,
+  homepage:`https://${language}.wikipedia.org/`,color:"#53606d",mark:"W",
+  note:`${name}维基百科最近可用 UTC 日的阅读次数榜，通常延迟一天；保留官方排名并过滤首页/管理页面。地区仅为语言版面导航，不代表读者、作者或事件所在地。统计数据 CC0，不复制百科正文。`,
+});
+const research = (id:string,name:string,query:string,topic:Source["defaultTopic"]):Source => ({
+  id,name,platform:"arXiv",region:"GLOBAL",kind:"news",adapter:"arxiv",provider:"arXiv 官方 API · CC0 元数据",
+  endpoint:`https://export.arxiv.org/api/query?search_query=${encodeURIComponent(query)}&start=0&max_results=30&sortBy=submittedDate&sortOrder=descending`,
+  homepage:"https://arxiv.org/",color:"#b31b1b",mark:"arX",defaultTopic:topic,
+  note:"最新提交论文，序号是按提交时间排列的位置，不是热度或被引排名。标题、作者和短摘要来自 CC0 描述元数据；论文内容版权由作者/出版者持有。链接前往 arXiv，不提供论文全文。",
+});
+const youtube = (id:string,name:string,region:Source["region"],market:string):Source => ({
+  id,name:`YouTube · ${name}热门`,platform:"YouTube",region,kind:"hot",adapter:"youtube",provider:"YouTube Data API v3",
+  endpoint:`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=${market}&maxResults=30`,
+  color:"#ef3030",mark:"YT",homepage:`https://www.youtube.com/feed/explore?gl=${market}`,
+  note:"官方 mostPopular 内容市场榜，现涵盖音乐、电影和游戏热门视频，不是所有类别热榜；地区代表内容市场，欧洲采用英国市场。服务器需配置 YOUTUBE_API_KEY，缺失时仅提供入口；每次请求消耗 1 个配额单位。",
+});
 const sixty=(s:Source,route:string):Source=>({...s,adapter:"sixty",endpoint:`https://60s.zellon.top/v2/${route}`,provider:"60s 社区实例 / UAPI 备用",note:"第三方平台榜单快照，保留原平台链接。社区接口不保证持续可用；失败时使用受配额限制的备用源。"});
 export const SOURCES:Source[] = [
   sixty(hot("zhihu","知乎热榜","知乎","#1772f6","知","https://www.zhihu.com/hot"),"zhihu"),
@@ -24,28 +42,31 @@ export const SOURCES:Source[] = [
   sixty(hot("baidu","百度热搜","百度","#3468ed","百","https://top.baidu.com/board?tab=realtime"),"baidu/hot"),
   hot("toutiao","头条热榜","今日头条","#e94d43","头","https://www.toutiao.com/"),
   hot("ithome","IT之家","IT之家","#d9393f","IT","https://www.ithome.com/","technology"),
-  hot("36kr","36氪","36氪","#3668c6","氪","https://36kr.com/","finance"),
+  {...hot("36kr","36氪快讯","36氪","#3668c6","氪","https://36kr.com/","finance"),kind:"news",note:"第三方聚合的资讯/快讯顺序，序号不是平台热搜名次；保留原发布链接。空热度不补数值。"},
   hot("juejin","掘金热榜","掘金","#227cf0","掘","https://juejin.cn/","technology"),
   {id:"hackernews",name:"Hacker News",platform:"Hacker News",region:"GLOBAL",kind:"community",adapter:"hn",provider:"Hacker News 官方 API",endpoint:"https://hacker-news.firebaseio.com/v0/topstories.json",homepage:"https://news.ycombinator.com/",color:"#ed7626",mark:"Y",defaultTopic:"technology",note:"官方首页榜单；points 是站内投票，不与其他平台播放量比较。"},
   {id:"github",name:"GitHub Trending",platform:"GitHub",region:"GLOBAL",kind:"community",adapter:"newsnow",provider:"NewsNow · 第三方聚合",endpoint:"https://newsnow.busiyi.world/api/s?id=github-trending-today",homepage:"https://github.com/trending",color:"#24292f",mark:"GH",defaultTopic:"technology",note:"每日热门仓库快照；星标与其他平台指标不可直接比较。"},
   {id:"devto",name:"DEV Community",platform:"DEV",region:"GLOBAL",kind:"community",adapter:"devto",provider:"DEV / Forem 官方 API",endpoint:"https://dev.to/api/articles?top=1&per_page=30",homepage:"https://dev.to/top/week",color:"#222",mark:"DEV",defaultTopic:"technology",note:"最近一天的热门开发文章。"},
-  {id:"reddit",name:"Reddit Popular",platform:"Reddit",region:"GLOBAL",kind:"community",adapter:"reddit",provider:"Reddit 公开 JSON",endpoint:"https://www.reddit.com/r/popular/hot.json?limit=30&raw_json=1",homepage:"https://www.reddit.com/r/popular/",color:"#ed5a24",mark:"r",note:"公开接口可能受平台网络与访问策略限制。"},
-  news("news-us","美国新闻","US","en-US","US","US:en"),
-  news("news-jp","日本新闻","JP","ja","JP","JP:ja"),
-  news("news-kr","韩国新闻","KR","ko","KR","KR:ko"),
-  news("news-eu","欧洲新闻 · 英国版","EU","en-GB","GB","GB:en"),
-  news("news-in","印度新闻","IN","en-IN","IN","IN:en"),
-  news("news-cn","中国新闻","CN","zh-CN","CN","CN:zh-Hans"),
-  news("news-ai","AI 动态","GLOBAL","en-US","US","US:en","artificial intelligence","ai"),
-  news("news-automation","自动化动态","GLOBAL","en-US","US","US:en","automation robotics AI agent","automation"),
-  news("news-beauty","美妆时尚动态","GLOBAL","en-US","US","US:en","beauty makeup skincare fashion","beauty"),
-  news("news-finance","金融市场动态","GLOBAL","en-US","US","US:en","finance stock markets economy","finance"),
-  news("news-beauty-cn","国内美妆动态","CN","zh-CN","CN","CN:zh-Hans","美妆 护肤 时尚","beauty"),
+  {id:"reddit",name:"Reddit Popular",platform:"Reddit",region:"GLOBAL",kind:"restricted",adapter:"restricted",provider:"需要授权的数据源",homepage:"https://www.reddit.com/r/popular/",color:"#ed5a24",mark:"r",note:"Reddit Data API 需要合规用途申请与 OAuth 授权；当前未接入。匿名 JSON 被拒绝时不绕过限制，前往原站查看。"},
+  wiki("en","英语","US"),
+  wiki("zh","中文","CN"),
+  wiki("ja","日语","JP"),
+  wiki("ko","韩语","KR"),
+  wiki("fr","法语","EU"),
+  wiki("hi","印地语","IN"),
+  research("arxiv-ai","AI 最新研究","cat:cs.AI OR cat:cs.LG","ai"),
+  research("arxiv-automation","机器人与自动化最新研究","cat:cs.RO OR cat:cs.SY","automation"),
+  research("arxiv-finance","金融与经济最新研究","cat:q-fin.* OR cat:econ.*","finance"),
+  {id:"crossref-beauty",name:"化妆品最新研究",platform:"Crossref",region:"GLOBAL",kind:"news",adapter:"crossref",provider:"Crossref 官方 API · 开放书目元数据",endpoint:"https://api.crossref.org/journals/2079-9284/works",homepage:"https://www.mdpi.com/journal/cosmetics",color:"#b64c7d",mark:"CR",defaultTopic:"beauty",note:"Cosmetics 期刊近 90 天已发表研究，按出版日期排列，不是美妆消费热榜。仅展示开放书目元数据、期刊/出版者及 DOI 链接，不复制可能受版权保护的摘要或正文。"},
   ...[
     {id:"twitter",name:"X / Twitter",platform:"X / Twitter",region:"GLOBAL" as const,color:"#171717",mark:"𝕏",homepage:"https://x.com/explore",note:"原生趋势需要符合条件的授权接口；当前未接入，前往 X 查看。"},
     {id:"tiktok",name:"TikTok",platform:"TikTok",region:"GLOBAL" as const,color:"#111",mark:"Tk",homepage:"https://www.tiktok.com/explore",note:"原生趋势接口未接入；前往 TikTok 查看。"},
     {id:"instagram",name:"Instagram",platform:"Instagram",region:"GLOBAL" as const,color:"#b64095",mark:"IG",homepage:"https://www.instagram.com/explore/",note:"原生趋势接口未接入；前往 Instagram 查看。"},
   ].map(s=>({...s,kind:"restricted" as const,adapter:"restricted" as const,provider:"需要授权的数据源"})),
-  {id:"youtube",name:"YouTube · 美国热门",platform:"YouTube",region:"US",kind:"hot",adapter:"youtube",provider:"YouTube Data API v3",color:"#ef3030",mark:"YT",homepage:"https://www.youtube.com/feed/explore",note:"官方热门视频 API。需要在服务器配置 YOUTUBE_API_KEY；未配置时只提供平台入口。"},
+  youtube("youtube","美国","US","US"),
+  youtube("youtube-jp","日本","JP","JP"),
+  youtube("youtube-kr","韩国","KR","KR"),
+  youtube("youtube-gb","英国市场","EU","GB"),
+  youtube("youtube-in","印度","IN","IN"),
 ];
 export const PLATFORMS = [...new Set(SOURCES.map(s=>s.platform))];

@@ -1,4 +1,75 @@
-# 全球趋势网站公开数据源核查
+# Trend Atlas 公开网站来源核查
+
+## 2026-09-27 公开版决定（以下历史核查不再作为当前接入清单）
+
+旧版私有阅读器的 Google News RSS 许可判断不适用于公开网站。11 个 Google News 来源已从目录删除；BBC/Guardian 也不擅自扩展私人阅读器用途。当前新增下列官方开放数据，原国内平台与受限平台入口保留。
+
+| 来源 | 排序/指标含义 | 公开使用范围 |
+| --- | --- | --- |
+| Wikimedia Analytics 六种语言版 | 最近可用 UTC 日的百科阅读排名/次数，通常延迟一天 | CC0 统计数据；仅标题/链接/指标，不复制百科正文 |
+| arXiv AI、机器人/自动化、金融/经济 | 最新提交论文，按 submittedDate 降序 | CC0 描述元数据、作者和短摘要；不下载或转发论文全文 |
+| Crossref Cosmetics 期刊 | 近 90 天论文按出版日期降序 | 开放书目元数据；不请求可能有版权的 abstract 字段 |
+| YouTube US/JP/KR/GB/IN | 官方 mostPopular 内容市场榜 | key 配置后可采集；目前涵盖音乐/电影/游戏，不代表所有视频类别 |
+| Reddit | 未授权平台入口 | 匿名 JSON 已遭拒绝，改为明确受限，不绕过政策或补假榜单 |
+
+国内 60s/UAPI、GitHub NewsNow 仍是第三方聚合，并非原平台官方授权 API。代码许可不赋予原内容转载权；保留原始平台链接、聚合来源、作者字段，只展示最多 280 字符短描述。收到停用要求或明确使用限制时停用对应来源，商业化须重新核查。
+
+### Wikimedia 官方文档与正常 TLS 请求证据
+
+[Analytics 入门](https://doc.wikimedia.org/generated-data-platform/aqs/analytics-api/documentation/getting-started.html) 以语言项目提供数据。[访问政策](https://doc.wikimedia.org/generated-data-platform/aqs/analytics-api/documentation/access-policy.html) 指定统计数据 CC0、联系信息 User-Agent 和请求串行化。[API 使用指南](https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_API_Usage_Guidelines) 要求尊重限流和内容许可。实现 User-Agent 指向运营者 GitHub 公开主页。
+
+接口模板为 `https://wikimedia.org/api/rest_v1/metrics/pageviews/top/<language>.wikipedia.org/all-access/YYYY/MM/DD`。2026-09-27 使用 Node fetch 正常 TLS 信任校验、串行请求 2026-09-26 UTC 日榜：
+
+| 语言版 | 导航分组 | HTTP | 原始榜单条数 | 真实样本 |
+| --- | --- | ---: | ---: | --- |
+| en | 美国频道英语版面 | 200 | 1000 | Main_Page: views 6869512, rank 1；Special:Search: views 835113, rank 2 |
+| zh | 中国频道中文版面 | 200 | 1000 | Wikipedia:首页: views 206375, rank 1；刘欢: views 87707, rank 2 |
+| ja | 日本频道日语版面 | 200 | 1000 | メインページ: views 788455, rank 1；玄理: views 112595, rank 2 |
+| ko | 韩国频道韩语版面 | 200 | 992 | 위키백과:대문: views 80894, rank 1；문화방송: views 15196, rank 2 |
+| fr | 欧洲频道法语版面 | 200 | 1000 | Wikipédia:Accueil_principal: views 486403, rank 1；Léon_XIV: views 177170, rank 2 |
+| hi | 印度频道印地语版面 | 200 | 979 | ज्ञानेश_कुमार: views 8144, rank 1；मुखपृष्ठ: views 5457, rank 2 |
+
+语言版读者分布多个国家，这些分组仅便于找相关语言内容，不是国家读者/作者/事件统计。欧洲不覆盖所有当地语言，印度也不覆盖所有当地语言。首页与管理命名空间过滤后，官方 rank 不重排，sampleSize 保留原榜规模，最多存 60 条有效百科条目；空缺名次就是过滤结果。
+
+先请求昨日，仅在官方返回 404 时顺序尝试前两日；三天均无数据就显示来源失败。fetchedAt 是获取时间，upstreamUpdatedAt 是统计日 UTC 结束时间，不冒充文章发布时间。日榜每天采集即可，不应以“上游时间超过 30 分钟”直接认定异常，也不应按网站访问量重复请求官方 API。
+
+### arXiv 官方条款与排序边界
+
+已核实 [API 条款](https://info.arxiv.org/help/api/tou.html) 和 [API 手册](https://info.arxiv.org/help/api/user-manual.html)。允许共享 CC0 描述元数据（含标题、作者、摘要）；全文通常仍受作者/出版者版权约束。全机单连接、每次请求至少间隔 3 秒。适配器有进程内队列，采集层仍须持久化全局锁以覆盖多个实例。手册说明同一查询通常按日更新，推荐每日刷新。
+
+| 频道 | search_query | 首次现场观测 |
+| --- | --- | --- |
+| AI | `cat:cs.AI OR cat:cs.LG` | 10 秒超时；后续模块复测需单独记录，不能据此宣称稳定 |
+| 机器人/自动化 | `cat:cs.RO OR cat:cs.SY` | HTTP 200，30 个 Atom entry |
+| 金融/经济 | `cat:q-fin.* OR cat:econ.*` | HTTP 200，30 个 Atom entry |
+
+共同参数 `start=0&max_results=30&sortBy=submittedDate&sortOrder=descending`；列表位置不是热度或被引排名。feed.updated 与单篇 published 分开保存。周末/假期没有新论文不是故障。链接至 arXiv abstract 页面，不服务 PDF。RSS/Atom 改为 fast-xml-parser 校验解析，拒绝 DOCTYPE/ENTITY、限制响应大小，处理命名空间/CDATA/多个 link；文本和 URL 仍进行安全校验。
+
+### Crossref：美妆研究，非消费趋势榜
+
+[REST 文档](https://www.crossref.org/documentation/retrieve-metadata/rest-api/) 提供无需注册的 API；[许可说明](https://www.crossref.org/documentation/retrieve-metadata/) 区分开放书目事实与可能有版权的摘要；[访问建议](https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/) 要求缓存和退避。
+
+实际请求 `https://api.crossref.org/journals/2079-9284/works`，近 90 天 from/until-pub-date、`sort=published&order=desc&rows=20&select=DOI,title,published,publisher,container-title`。正常 TLS 校验 HTTP 200，total-results 93，返回 20 条；首两 DOI `10.3390/cosmetics13050258`、`10.3390/cosmetics13050256`，published 2026-09-25。正式实现上限 30 条，不请求 abstract，不调用出版者正文。
+
+候选 International Journal of Cosmetic Science（1468-2494）同样请求 200，总数 27，当前不再增加负载。此前对 Journal of Cosmetic Dermatology（1473-2165）的查询超时，未默认选用。仅年/年月的模糊出版日期不补成精确日期；序号是日期查询的位置。建议 12–24 小时刷新。
+
+### YouTube 新覆盖与免费配额
+
+[videos.list](https://developers.google.com/youtube/v3/docs/videos/list) 每请求 1 unit；[官方修订历史](https://developers.google.com/youtube/v3/revision_history) 说明自 2025-07-21，mostPopular 来自音乐、电影、游戏榜，旧 Trending Now 已弃用。不能用该接口承诺 AI、美妆、财经全类别视频热榜。
+
+新增 US/JP/KR/GB/IN 五个市场，若每小时一次合计约 120 units/天；实际可用额度以 Google Cloud 项目为准。GB 是英国内容市场，非欧洲汇总。当前无 key，未取得授权的视频运行证据；缺 key 不请求，全部明确未授权状态与原站入口。
+
+### 验证范围与最终上线边界
+
+模块验证记录在 `work/public-source-verification.json` 与 `work/public-source-ai-recheck.json`。15 项确定性检查全部通过：RSS/Atom 的实体、CDATA、命名空间与作者；DOCTYPE/ENTITY/畸形 XML 拒绝；危险链接、去重和原排名间隔；短描述长度；移除私人 RSS；日榜 404 回退及 429 不回退；API 错误条目不当作论文；不复制 Crossref 摘要或补精确日期；YouTube 缺密钥；截止前停止新请求、取消在途请求、队列窗口检查和 arXiv 冷却保持在采集锁内；HTTP Retry-After 的秒数/日期/无效值处理。模块 TypeScript 检查与 git diff --check 通过。
+
+真实 collect 的两轮观测累计覆盖六个 Wikipedia 来源各 60 条、arXiv 三频道各 30 条、Crossref 30 条。AI 最初出现连接超时，单独复测成功（首条 `2609.30266v1`，rank 1）；第二轮英语/中文百科一度 6.5 秒超时，其他源成功。失败记录也保留，不能由成功复测宣称持续稳定。官方 Atom RSS 合并分类接口曾返回 200 但零条（当日没有批次内容），未用它伪装“最新 30 篇”的 API 替代。
+
+collect 第七参数接受绝对 deadline；HTTP 请求合并截止 AbortSignal，Wikimedia/arXiv 队列真正开始及日榜回退前检查剩余窗口。arXiv 请求结束后等待 3.1 秒冷却才返回，以便所有采集任务 settled 后再释放全局锁，避免下一实例立即发请求。生产锁 50 秒时，调用者使用 45 秒网络截止、40 秒停止派发，给冷却和持久化留余量。
+
+以上 HTTP 200 只证明现场请求成功，没有长期可用性承诺。生产服务器还需核验源访问、持久化快照、定时采集、配额和退避。公众请求应读取快照，服务端采集才可接触密钥。状态包括成功、旧缓存、超时、授权缺失与额度耗尽，不以演示数据填充。排序代理不叫全网热度，不将各平台播放/投票/阅读量相加。
+
+## 历史核查：旧版私有阅读器（保留证据，接入决策以上述公开版为准）
 
 核查日期：2026-09-27（Asia/Shanghai）；HTTP 响应日期为 2026-09-26 16:11–16:23 UTC 附近。本文是一次现场连通性与文档核查，不代表长期 SLA。没有提交用户凭据、绕过平台登录、解验证码或调用 Sites。
 

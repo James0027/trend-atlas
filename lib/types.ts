@@ -10,7 +10,7 @@ export type Item = {
 export type Source = {
   id: string; name: string; platform: string; region: Region; kind: "hot" | "news" | "community" | "restricted";
   provider: string; homepage: string; note: string; defaultTopic?: Topic;
-  adapter: "sixty" | "uapi" | "dailyhot" | "newsnow" | "rss" | "hn" | "devto" | "reddit" | "youtube" | "restricted";
+  adapter: "sixty" | "uapi" | "dailyhot" | "newsnow" | "rss" | "hn" | "devto" | "reddit" | "youtube" | "wikimedia" | "arxiv" | "crossref" | "restricted";
   endpoint?: string; color: string; mark: string;
 };
 export type SourceStatus = {id: string; state: "ok" | "cached" | "error" | "restricted"; count: number; fetchedAt: number | null; upstreamUpdatedAt?: number; channel?:string; checkedAt: number; message: string; nextRefreshAt: number};
