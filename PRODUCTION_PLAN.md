@@ -11,7 +11,7 @@
 
 | Requirement | Evidence needed | Current state |
 |---|---|---|
-| Canonical D drive project | Directory + Git history + production changes | D drive Git commit `f5731b2` pushed to main |
+| Canonical D drive project | Directory + Git history + production changes | D drive Git main pushed and tracking GitHub main |
 | GitHub repository | Remote URL + pushed commit | Private repository [James0027/trend-atlas](https://github.com/James0027/trend-atlas), main pushed |
 | Standard Next.js | Dependency lock + successful production build | Next.js 16 build passed on Node 24 |
 | Public deployed website | Ready deployment + anonymous HTTP/browser access | Vercel `dpl_F3EPKGzaEJgakyj691GLsUCZXfnZ` READY; [public site](https://trend-atlas-eta.vercel.app) HTTP 200 and desktop/mobile rendered |
@@ -28,10 +28,12 @@
 | Free limits | No paid plans/resources; bounded retention/quota configuration | Free cloud resources created; quota/retention tests passed |
 | Responsive/accessibility/error states | Desktop/mobile browser checks | 10/10 browser fixture flows passed; live 1440px/390px no horizontal overflow or page exceptions |
 | Secrets/private data | Git diff/ignore + client bundle check + RLS | Staged diff and 17 client static files excluded actual server secrets; Vercel secrets hidden; cloud RLS SQL passed |
-| CI and recovery workflow | GitHub checks + README + rollback/redeploy steps | [GitHub Actions 36446167715](https://github.com/James0027/trend-atlas/actions/runs/36446167715) passed; auto Git deployment needs Vercel Login Connection |
+| CI and recovery workflow | GitHub checks + README + rollback/redeploy steps | [GitHub Actions 36451308821](https://github.com/James0027/trend-atlas/actions/runs/36451308821) passed; auto Git deployment needs Vercel Login Connection |
 | Gemini worker | Successful real model response + reviewed task artifact | Prior worker artifact documented; production independence preserved |
 
 ## Workflow
+
+The public alias still serves the verified `dpl_F3EPKGzaEJgakyj691GLsUCZXfnZ` deployment. A later CLI deploy of commit `3033972` was blocked by Vercel because that commit's author resolves to a different GitHub account. Repository-local author identity has been corrected to `James0027` for future commits; the existing public deployment was not replaced. Vercel GitHub Login Connection remains necessary for automatic Git deployments.
 
 1. Preserve the previous deployment, clone source, verify tool authorization, create GitHub repository.
 2. Migrate framework and database; replace sources that cannot support public presentation.
