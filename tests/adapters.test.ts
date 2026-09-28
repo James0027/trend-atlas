@@ -215,7 +215,7 @@ describe("HTTP safety and shared deadlines", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps arXiv cooldown inside settlement and refuses overdue queued requests", async () => {
+  it("settles arXiv results before cooldown while refusing overdue queued requests", async () => {
     vi.useFakeTimers(); vi.setSystemTime(NOW);
     fetchMock.mockResolvedValue(new Response(atomFeed()));
     const first = adapters.collect(arxiv, NOW, undefined, undefined, undefined, undefined, NOW + 10_000);
@@ -223,13 +223,33 @@ describe("HTTP safety and shared deadlines", () => {
     let settled = false;
     void first.then(() => { settled = true; });
     const secondAssertion = expect(second).rejects.toThrow("本轮采集时间已用完");
-    await vi.advanceTimersByTimeAsync(3_000);
-    expect(settled).toBe(false);
-    await vi.advanceTimersByTimeAsync(100);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(settled).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(3_100);
     expect((await first).items).toHaveLength(1);
     await secondAssertion;
     expect(settled).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps three slow arXiv requests inside the upstream deadline without shortening their spacing", async () => {
+    vi.useFakeTimers(); vi.setSystemTime(NOW);
+    const startedAt: number[] = [];
+    fetchMock.mockImplementation(async () => {
+      startedAt.push(Date.now());
+      await new Promise(resolve => setTimeout(resolve, 8_000));
+      return new Response(atomFeed());
+    });
+    const requests = Array.from({ length: 3 }, () => adapters.collect(arxiv, NOW,
+      undefined, undefined, undefined, undefined, NOW + 31_000));
+    let thirdSettled = false;
+    void requests[2].then(() => { thirdSettled = true; });
+    await vi.advanceTimersByTimeAsync(30_200);
+    expect(fetchMock.mock.calls.map(call => String(call[0]))).toHaveLength(3);
+    expect(startedAt).toEqual([NOW, NOW + 11_100, NOW + 22_200]);
+    expect(thirdSettled).toBe(true);
+    expect((await Promise.all(requests)).map(result => result.items.length)).toEqual([1, 1, 1]);
   });
 
   it("rejects oversized announced and streamed responses", async () => {

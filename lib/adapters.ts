@@ -92,9 +92,11 @@ function fetchArxiv(url:string,deadline?:number):Promise<string> {
   let started=false;
   const work=()=>{ensureRequestWindow(deadline);started=true;return fetchText(url,AbortSignal.timeout(12000),undefined,deadline);};
   const run=arxivQueue.then(work,work);
-  const completed=run.then(async value=>{if(started)await new Promise<void>(resolve=>setTimeout(resolve,3100));return value;},async error=>{if(started)await new Promise<void>(resolve=>setTimeout(resolve,3100));throw error;});
-  arxivQueue=completed.catch(()=>undefined);
-  return completed;
+  const cooldown=async()=>{if(started)await new Promise<void>(resolve=>setTimeout(resolve,3100));};
+  // Keep the next request spaced out, but do not hold this result for the
+  // trailing cooldown: each source still needs time to persist its snapshot.
+  arxivQueue=run.then(cooldown,cooldown);
+  return run;
 }
 const wikiMainPages=new Set(["Main_Page","メインページ","首页","首頁","मुखपृष्ठ","대문","Accueil_principal"]);
 const wikiAdministrative=/^(?:Special|Wikipedia|Wikipédia|Portal|Category|Template|File|Help|User|Talk|MediaWiki|维基百科|維基百科|特殊|分类|分類|模板|帮助|幫助|用户|用戶|讨论|討論|特別|ウィキペディア|カテゴリ|ファイル|利用者|위키백과|특수|분류|파일|틀|도움말|사용자|विकिपीडिया|विशेष|श्रेणी|साँचा|चित्र|सहायता):/i;
